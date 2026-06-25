@@ -1,0 +1,34 @@
+# for Unseen Track or test Seen
+# No training required.Aims directly at the next Virtual Checkpoint (VCP).
+
+import math
+
+def getBestAction(carX, carY, carAngle, currentSpeed, nextVcpX, nextVcpY):
+    angleToTarget = math.atan2(nextVcpY - carY, nextVcpX - carX)
+    angleErrorRad = angleToTarget - carAngle
+    angleErrorRad = (angleErrorRad + math.pi) % (2 * math.pi) - math.pi
+
+    # convert to degrees (range: -180 to 180)
+    angleErrorDeg = math.degrees(angleErrorRad)
+    
+    action = {"forward": True, "backward": False, "left": False, "right": False}
+
+    absError = abs(angleErrorDeg)
+    # 1. small angle, go straight
+    if absError < 3:
+        return action
+    elif angleErrorDeg > 0:
+        action["right"] = True
+    else:
+        action["left"] = True
+        
+    # mid sharp(above 20)
+    if absError > 20.0 and currentSpeed > 220:
+        action["forward"] = False
+        
+    # sharp turn(above 45)
+    if absError > 45.0 and currentSpeed > 180:
+        action["forward"] = False
+        action["backward"] = True
+        
+    return action
